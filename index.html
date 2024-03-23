@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Task Tracker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #282c34;
+            color: #61dafb;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .taskCheckbox {
+            margin-bottom: 10px;
+            color: #61dafb;
+        }
+
+        #taskForm {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        #newTask {
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #61dafb;
+            color: #282c34;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45aaf2;
+        }
+
+        #taskList {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        span {
+            cursor: pointer;
+            border-bottom: 1px dashed #61dafb;
+            transition: color 0.3s;
+            margin-right: 10px;
+        }
+
+        span:hover {
+            color: #45aaf2;
+        }
+
+        .deleteButton {
+            background-color: #f92672;
+            color: #282c34;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .deleteButton:hover {
+            background-color: #d91a63;
+        }
+
+        label:hover .deleteButton {
+            opacity: 1;
+        }
+
+        #result {
+            font-weight: bold;
+            color: #f92672;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Daily Task Tracker</h1>
+    <p>Mark each task as done:</p>
+
+    <!-- Task Checkboxes -->
+    <form id="taskForm">
+        <label>Add Task: <input type="text" id="newTask"></label>
+        <button type="button" onclick="addTask()">Add</button>
+    </form>
+
+    <div id="taskList"></div>
+
+    <br>
+
+    <button onclick="checkTasks()">Submit</button>
+
+    <p id="result"></p>
+
+    <script>
+        // Load tasks from local storage or use default tasks
+        var tasks = JSON.parse(localStorage.getItem('tasks')) || ['Morning Exercise', 'Read for 30 minutes', 'Practice coding for 1 hour'];
+
+        // Display tasks on the page
+        function displayTasks() {
+            var taskListDiv = document.getElementById('taskList');
+            taskListDiv.innerHTML = '';
+
+            tasks.forEach(function(task, index) {
+                var checkboxId = 'taskCheckbox' + index;
+                var editFieldId = 'editField' + index;
+
+                taskListDiv.innerHTML += `
+                    <label>
+                        <input type="checkbox" class="taskCheckbox" id="${checkboxId}"> 
+                        <span id="${editFieldId}" onclick="editTask(${index})">${task}</span>
+                        <button class="deleteButton" onclick="removeTask(${index})">Delete</button>
+                    </label><br>
+                `;
+            });
+        }
+
+        displayTasks();
+
+        // Add a new task
+        function addTask() {
+            var newTaskInput = document.getElementById('newTask');
+            var newTask = newTaskInput.value.trim();
+
+            if (newTask !== '') {
+                tasks.push(newTask);
+                displayTasks();
+                newTaskInput.value = '';
+
+                // Save tasks to local storage
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+        }
+
+        // Remove a task
+        // function removeTask(index) {
+        //     tasks.splice(index, 1);
+        //     displayTasks();
+
+        //     // Save tasks to local storage
+        //     localStorage.setItem('tasks', JSON.stringify(tasks));
+        // }
+
+        function removeTask(index) {
+    // Display confirmation dialog
+    var confirmation = confirm("Are you sure you want to delete?");
+
+    // If user confirms, remove the task
+    if (confirmation) {
+        tasks.splice(index, 1);
+        displayTasks();
+
+        // Save tasks to local storage
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+}
+
+
+        // Edit a task
+        // function editTask(index) {
+        //     var editFieldId = 'editField' + index;
+        //     var taskText = document.getElementById(editFieldId).innerText;
+        //     var newTask = prompt('Edit task:', taskText);
+
+        //     if (newTask !== null && newTask.trim() !== '') {
+        //         tasks[index] = newTask.trim();
+        //         displayTasks();
+
+        //         // Save tasks to local storage
+        //         localStorage.setItem('tasks', JSON.stringify(tasks));
+        //     }
+        // }
+
+        function editTask(index) {
+    var editFieldId = 'editField' + index;
+    var taskText = document.getElementById(editFieldId).innerText;
+    var previousTask = tasks[index]; // Store the previous task
+
+    var newTask = prompt('Edit task:', taskText);
+
+    // Check if the user has entered a new task
+    if (newTask !== null) {
+        if (newTask.trim() !== '') {
+            tasks[index] = newTask.trim();
+        } else {
+            // If the user cancels or enters an empty task, restore the previous task
+            tasks[index] = previousTask;
+        }
+    } else {
+        // If the user cancels the prompt, restore the previous task
+        tasks[index] = previousTask;
+    }
+
+    displayTasks();
+
+    // Save tasks to local storage
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+        // Check tasks and calculate fines
+        function checkTasks() {
+            var taskCheckboxes = document.querySelectorAll('.taskCheckbox');
+            var totalFineAmount = 0;
+
+            taskCheckboxes.forEach(function(checkbox, index) {
+                if (!checkbox.checked) {
+                    totalFineAmount += 5000;
+                }
+            });
+
+            document.getElementById('result').innerHTML = 'Total fine amount: $' + totalFineAmount;
+
+            // Reset task checkboxes for the next day
+            taskCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+        }
+    </script>
+</body>
+</html>
